@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">s
+  <meta charset="UTF-8">
   <title>Unisonic Hockey Game</title>
   <style>
     canvas {
@@ -50,11 +50,13 @@
     }
 
     function drawScore() {
-      ctx.font = "60px Arial";
-      ctx.fillStyle = "white";
-      ctx.fillText(leftScore, canvas.width / 2 - 100, 60);
-      ctx.fillText(rightScore, canvas.width / 2 + 60, 60);
-    }
+  ctx.font = "60px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "left";
+  ctx.fillText(leftScore, canvas.width / 4, 60); // centered between left wall and center
+  ctx.textAlign = "right";
+  ctx.fillText(rightScore, canvas.width * 3 / 4, 60); // centered between right wall and center
+}
 
     function drawBordersAndGoals() {
       ctx.strokeStyle = "white";
@@ -84,12 +86,18 @@
     }
 
     function drawMenu(text) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = "40px Arial";
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "40px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  ctx.font = "20px Arial";
+  ctx.fillText("(Click anywhere to enable controls)", canvas.width / 2, canvas.height / 2 + 30);
+  ctx.fillText("Controls:", canvas.width / 2, canvas.height / 2 + 60);
+  ctx.fillText("W/S = Left Player Up/Down", canvas.width / 2, canvas.height / 2 + 90);
+  ctx.fillText("Arrow Up/Down = Right Player Up/Down", canvas.width / 2, canvas.height / 2 + 120);
+  ctx.fillText("G = Start | R = Replay | Q = Quit", canvas.width / 2, canvas.height / 2 + 150);
+}
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -117,65 +125,60 @@
     }
 
     let serveTimeout = null;
-let serveDirection = 1;
+    let serveDirection = 1;
 
-function servePuck(fromRight) {
-  serveDirection = fromRight ? -1 : 1;
-  puckX = fromRight ? canvas.width - 20 : 20;
-  puckY = Math.random() * (canvas.height - puckSize * 2);
-  let angle = (Math.random() - 0.5) * 6;
-  puckSpeedX = serveDirection * 6;
-  puckSpeedY = angle;
-}
+    function servePuck(fromRight) {
+      serveDirection = fromRight ? -1 : 1;
+      puckX = fromRight ? canvas.width - 20 : 20;
+      puckY = Math.random() * (canvas.height - puckSize * 2);
+      let angle = (Math.random() - 0.5) * 6;
+      puckSpeedX = serveDirection * 6;
+      puckSpeedY = angle;
+    }
 
-function update() {
-  updatePaddles();
-
-  puckX += puckSpeedX;
-  puckY += puckSpeedY;
-
-  if (puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) {
-    rightScore++;
-    playBeep(900);
-    gameState = 'serving';
-    clearTimeout(serveTimeout);
-    serveTimeout = setTimeout(() => {
-      gameState = 'playing';
-      servePuck(false);
-    }, 1000);
-    return;
-  } else if (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) {
-    leftScore++;
-    playBeep(900);
-    gameState = 'serving';
-    clearTimeout(serveTimeout);
-    serveTimeout = setTimeout(() => {
-      gameState = 'playing';
-      servePuck(true);
-    }, 1000);
-    return;
-  }
-
-  if ((puckX <= 10 && (puckY < goalTop || puckY + puckSize > goalBottom)) ||
-      (puckX + puckSize >= canvas.width - 10 && (puckY < goalTop || puckY + puckSize > goalBottom))) {
-    puckSpeedX *= -1;
-    playBeep(300);
-  }
+    function update() {
       updatePaddles();
 
       puckX += puckSpeedX;
       puckY += puckSpeedY;
 
-      
+      if (puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom && gameState !== 'serving') {
+        rightScore++;
+        playBeep(900);
+        gameState = 'serving';
+        clearTimeout(serveTimeout);
+        serveTimeout = setTimeout(() => {
+          gameState = 'playing';
+          servePuck(false);
+        }, 1000);
+      } else if (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom && gameState !== 'serving') {
+        leftScore++;
+        playBeep(900);
+        gameState = 'serving';
+        clearTimeout(serveTimeout);
+        serveTimeout = setTimeout(() => {
+          gameState = 'playing';
+          servePuck(true);
+        }, 1000);
+      }
+
+      if ((puckX <= 10 && (puckY < goalTop || puckY + puckSize > goalBottom)) ||
+          (puckX + puckSize >= canvas.width - 10 && (puckY < goalTop || puckY + puckSize > goalBottom))) {
+        puckSpeedX *= -1;
+        playBeep(300);
+      }
 
       if (puckY <= 10 || puckY + puckSize >= canvas.height - 10) {
-        puckSpeedY *= -1;
-        playBeep(500);
+        if (!((puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) ||
+              (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom))) {
+          puckSpeedY *= -1;
+          playBeep(500);
+        }
       }
 
       function paddleHit(px, py, paddleX, paddleY, direction) {
         const withinX = direction === 'left' ? (px < paddleX + paddleWidth && px + puckSize > paddleX) :
-                                             (px + puckSize > paddleX && px < paddleX + paddleWidth);
+                                               (px + puckSize > paddleX && px < paddleX + paddleWidth);
         return withinX && py < paddleY + paddleHeight && py + puckSize > paddleY;
       }
 
@@ -211,49 +214,16 @@ function update() {
         }
       });
 
-      if (puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) {
-  rightScore++;
-  playBeep(900);
-  gameState = 'serving';
-  clearTimeout(serveTimeout);
-  serveTimeout = setTimeout(() => {
-    gameState = 'playing';
-    servePuck(false);
-  }, 1000);
-} else if (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) {
-  leftScore++;
-  playBeep(900);
-  gameState = 'serving';
-  clearTimeout(serveTimeout);
-  serveTimeout = setTimeout(() => {
-    gameState = 'playing';
-    servePuck(true);
-  }, 1000);
-}
-
-      if (leftScore >= 15 || rightScore >= 15) {
+      if ((leftScore >= 15 || rightScore >= 15) && gameState !== 'serving') {
         gameState = 'gameover';
       }
     }
 
     function gameLoop() {
-  if (gameState === 'menu') {
-    drawMenu('Press "G" to Start');
-    return;
-  } else if (gameState === 'serving') {
-    draw();
-    return;
-  } else if (gameState === 'gameover') {
-    drawMenu(`Game Over! ${leftScore > rightScore ? 'Left' : 'Right'} Wins! Press "R" to Replay or "Q" to Quit`);
-    return;
-  }
-
       if (gameState === 'menu') {
         drawMenu('Press "G" to Start');
         return;
-      }
-
-      if (gameState === 'gameover') {
+      } else if (gameState === 'gameover') {
         drawMenu(`Game Over! ${leftScore > rightScore ? 'Left' : 'Right'} Wins! Press "R" to Replay or "Q" to Quit`);
         return;
       }
@@ -289,6 +259,9 @@ function update() {
     document.addEventListener("keyup", (e) => {
       heldKeys.delete(e.key);
     });
-  </script>
+  canvas.addEventListener("mousedown", () => {
+  canvas.focus();
+});
+</script>
 </body>
 </html>
