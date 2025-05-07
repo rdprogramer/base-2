@@ -144,7 +144,7 @@ function playBeep(frequency = 440, duration = 100) {
 
       if (puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom && gameState !== 'serving') {
         rightScore++;
-        playBeep(900);
+        if (gameState === 'playing' || $1 === 900) playBeep($1);
         gameState = 'serving';
         clearTimeout(serveTimeout);
         serveTimeout = setTimeout(() => {
