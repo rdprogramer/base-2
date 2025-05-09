@@ -143,23 +143,29 @@ function playBeep(frequency = 440, duration = 100) {
       puckY += puckSpeedY;
 
       if (puckX <= 10 && puckY >= goalTop && puckY + puckSize <= goalBottom && gameState !== 'serving') {
-        rightScore++;
-        if (gameState === 'playing' || $1 === 900) playBeep($1);
-        gameState = 'serving';
-        clearTimeout(serveTimeout);
-        serveTimeout = setTimeout(() => {
-          gameState = 'playing';
-          servePuck(false);
-        }, 1000);
+  rightScore++;
+  playBeep(900);
+  gameState = 'serving';
+  clearTimeout(serveTimeout);
+  puckSpeedX = 6;
+  puckSpeedY = 0;
+  serveTimeout = setTimeout(() => {
+    gameState = 'playing';
+    servePuck(false);
+  }, 1000);
+}, 1000);
       } else if (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom && gameState !== 'serving') {
-        leftScore++;
-        playBeep(900);
-        gameState = 'serving';
-        clearTimeout(serveTimeout);
-        serveTimeout = setTimeout(() => {
-          gameState = 'playing';
-          servePuck(true);
-        }, 1000);
+  leftScore++;
+  playBeep(900);
+  gameState = 'serving';
+  clearTimeout(serveTimeout);
+  puckSpeedX = -6;
+  puckSpeedY = 0;
+  serveTimeout = setTimeout(() => {
+    gameState = 'playing';
+    servePuck(true);
+  }, 1000);
+}, 1000);
       }
 
       if ((puckX <= 10 && (puckY < goalTop || puckY + puckSize > goalBottom)) ||
