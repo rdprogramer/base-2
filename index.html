@@ -207,7 +207,12 @@
           puckSpeedX = 0;
           puckSpeedY = 0;
           serveTimeout = setTimeout(() => {
-            gameState = 'playing';
+          // Check win condition before resuming play
+          if (leftScore >= 11 || rightScore >= 11) {
+            gameState = 'gameover';
+            return;
+          }
+          gameState = 'playing';
             servePuck(true); // right player serves from right side
           }, 2000);
         } else if (puckX + puckSize >= canvas.width - 10 && puckY >= goalTop && puckY + puckSize <= goalBottom) {
